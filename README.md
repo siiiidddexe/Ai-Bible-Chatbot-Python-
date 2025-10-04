@@ -1,5 +1,4 @@
 # The-Bible-Ai-Python-Project [Open Source]
-
 # 📖 Bible AI - Voice-Activated Spiritual Guide
 
 A beautiful, modern voice-activated AI assistant that narrates Bible stories with cinematic detail. Features a stunning web interface with gradient orb animations and 100% voice control using macOS native speech.
@@ -53,7 +52,7 @@ A beautiful, modern voice-activated AI assistant that narrates Bible stories wit
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/bible-ai-chatbot.git
+git clone hhttps://github.com/siiiidddexe/The-Bible-Ai-Python-Project.git
 cd bible-ai-chatbot
 ```
 
