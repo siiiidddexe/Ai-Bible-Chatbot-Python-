@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible AI - Voice Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0118 0%, #1a0b2e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .title {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 300;
+            letter-spacing: 0.3em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: clamp(0.875rem, 2vw, 1rem);
+            color: #6b7280;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .orb-container {
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1;
+            margin: 0 auto 2rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .orb {
+            width: min(280px, 70vw);
+            height: min(280px, 70vw);
+            border-radius: 50%;
+            position: relative;
+            background: radial-gradient(circle at 30% 30%, 
+                #a5f3fc 0%,
+                #7dd3fc 15%,
+                #60a5fa 35%,
+                #6366f1 55%,
+                #7c3aed 80%,
+                #6b21a8 100%);
+            box-shadow: 
+                0 0 60px rgba(139, 92, 246, 0.4),
+                0 0 120px rgba(99, 102, 241, 0.3),
+                inset 0 0 80px rgba(255, 255, 255, 0.1);
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        .orb::before {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 15%;
+            width: 40%;
+            height: 40%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(15px);
+        }
+
+        .orb::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+            background: inherit;
+            filter: blur(40px);
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .sparkles {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .sparkle {
+            position: absolute;
+            color: white;
+            font-size: 2.5rem;
+            animation: float 3s ease-in-out infinite;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+
+        .sparkle:nth-child(1) {
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3rem;
+            animation-delay: 0s;
+        }
+
+        .sparkle:nth-child(2) {
+            top: 58%;
+            left: 25%;
+            font-size: 1.5rem;
+            animation-delay: 0.5s;
+        }
+
+        .sparkle:nth-child(3) {
+            top: 58%;
+            left: 75%;
+            font-size: 1.3rem;
+            animation-delay: 1s;
+        }
+
+        @keyframes breathe {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 
+                    0 0 60px rgba(139, 92, 246, 0.4),
+                    0 0 120px rgba(99, 102, 241, 0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 
+                    0 0 80px rgba(139, 92, 246, 0.5),
+                    0 0 160px rgba(99, 102, 241, 0.4);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* Speaking animation */
+        .orb.speaking {
+            animation: speak 0.6s ease-in-out infinite;
+        }
+
+        @keyframes speak {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 
+                    0 0 80px rgba(96, 165, 250, 0.6),
+                    0 0 160px rgba(99, 102, 241, 0.4);
+            }
+            50% {
+                transform: scale(1.08);
+                box-shadow: 
+                    0 0 100px rgba(96, 165, 250, 0.7),
+                    0 0 200px rgba(99, 102, 241, 0.5);
+            }
+        }
+
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            top: 50%;
+            left: 50%;
+        }
+
+        .orb.speaking .particle {
+            animation: particle-rotate 3s linear infinite;
+            opacity: 0.8;
+        }
+
+        @keyframes particle-rotate {
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg) translateX(min(150px, 35vw)) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) rotate(360deg) translateX(min(150px, 35vw)) rotate(-360deg);
+                opacity: 0;
+            }
+        }
+
+        .status {
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+            color: #60a5fa;
+            margin: 1.5rem 0;
+            min-height: 30px;
+            transition: color 0.3s;
+        }
+
+        .status.listening {
+            color: #10b981;
+        }
+
+        .status.speaking {
+            color: #60a5fa;
+        }
+
+        .button {
+            background: #6366f1;
+            color: #f0f0f0;
+            border: none;
+            padding: clamp(15px, 3vw, 20px) clamp(50px, 10vw, 70px);
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+            font-family: inherit;
+            margin: 0 auto;
+            display: inline-block;
+        }
+
+        .button:hover {
+            background: #7c8cf6;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.stop {
+            background: #ff4757;
+        }
+
+        .button.stop:hover {
+            background: #ff5767;
+        }
+
+        .hint {
+            color: #4b5563;
+            font-size: clamp(0.875rem, 2vw, 0.95rem);
+            margin-top: 1.5rem;
+        }
+
+        .log-container {
+            max-width: 800px;
+            width: 90%;
+            margin: 3rem auto 0;
+            background: rgba(26, 26, 46, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            max-height: 150px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .log-entry {
+            color: #a1a1aa;
+            font-size: clamp(0.75rem, 1.8vw, 0.9rem);
+            margin-bottom: 0.5rem;
+            font-family: 'Monaco', 'Courier New', monospace;
+            text-align: left;
+        }
+
+        /* Scrollbar styling */
+        .log-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .log-container::-webkit-scrollbar-track {
+            background: rgba(26, 26, 46, 0.3);
+            border-radius: 10px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 10px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.5);
+        }
+
+        /* API Key Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 80px rgba(99, 102, 241, 0.2);
+        }
+
+        .modal-title {
+            font-size: 1.75rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-subtitle {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-info {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            border-radius: 8px;
+            padding: 0.875rem;
+            margin-bottom: 1.25rem;
+            font-size: 0.8rem;
+            color: #93c5fd;
+            line-height: 1.5;
+        }
+
+        .modal-info a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .modal-info a:hover {
+            text-decoration: underline;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(30, 30, 60, 0.6);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.95rem;
+            font-family: 'Monaco', 'Courier New', monospace;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .modal-input::placeholder {
+            color: #4b5563;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-button.primary {
+            background: #6366f1;
+            color: white;
+        }
+
+        .modal-button.primary:hover {
+            background: #7c8cf6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .modal-button.secondary {
+            background: rgba(99, 102, 241, 0.1);
+            color: #a78bfa;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .modal-button.secondary:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .modal-message {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            text-align: center;
+            display: none;
+        }
+
+        .modal-message.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+
+        .modal-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .modal-message.active {
+            display: block;
+        }
+
+        .edit-key-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a78bfa;
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .edit-key-button:hover {
+            background: rgba(99, 102, 241, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .title {
+                letter-spacing: 0.2em;
+            }
+            
+            .orb {
+                width: min(240px, 80vw);
+                height: min(240px, 80vw);
+            }
+            
+            .log-container {
+                width: 95%;
+                padding: 1rem;
+            }
+
+            .edit-key-button {
+                top: 10px;
+                right: 10px;
+                padding: 0.625rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            .modal {
+                padding: 1.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .orb {
+                width: min(200px, 90vw);
+                height: min(200px, 90vw);
+            }
+            
+            .sparkle:nth-child(1) {
+                font-size: 2rem;
+            }
+            
+            .sparkle:nth-child(2) {
+                font-size: 1.2rem;
+            }
+            
+            .sparkle:nth-child(3) {
+                font-size: 1rem;
+            }
+
+            .modal {
+                padding: 1.5rem;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Edit Key Button (top right) -->
+    <button class="edit-key-button" id="editKeyButton">🔑 Edit API Key</button>
+
+    <!-- API Key Modal -->
+    <div class="modal-overlay" id="apiKeyModal">
+        <div class="modal">
+            <h2 class="modal-title">Gemini API Key</h2>
+            <p class="modal-subtitle">Enter your Google Gemini API key to continue</p>
+            
+            <div class="modal-info">
+                Don't have an API key? Get one for free at 
+                <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
+            </div>
+            
+            <input 
+                type="text" 
+                class="modal-input" 
+                id="apiKeyInput" 
+                placeholder="AIza..."
+                autocomplete="off"
+            />
+            
+            <div class="modal-message" id="modalMessage"></div>
+            
+            <div class="modal-buttons">
+                <button class="modal-button secondary" id="cancelButton">Cancel</button>
+                <button class="modal-button primary" id="saveButton">Save Key</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="title">B I B L E  A I</h1>
+        <p class="subtitle">Voice-Activated Spiritual Guide</p>
+
+        <div class="orb-container">
+            <div class="orb" id="orb">
+                <div class="sparkles">
+                    <div class="sparkle">✦</div>
+                    <div class="sparkle">✦</div>
+                    <div class="sparkle">✦</div>
+                </div>
+                <div class="particles" id="particles"></div>
+            </div>
+        </div>
+
+        <div class="status" id="status">Ready</div>
+
+        <button class="button" id="mainButton">Start Listening</button>
+
+        <p class="hint">💬 Say "Hey Bible" to activate</p>
+
+        <div class="log-container" id="logContainer">
+            <div class="log-entry">Waiting for commands...</div>
+        </div>
+    </div>
+
+    <script>
+        const WS_PORT = 8765;
+        let ws = null;
+        let reconnectInterval = null;
+
+        const orb = document.getElementById('orb');
+        const status = document.getElementById('status');
+        const mainButton = document.getElementById('mainButton');
+        const logContainer = document.getElementById('logContainer');
+        const particlesContainer = document.getElementById('particles');
+        
+        // API Key Modal Elements
+        const apiKeyModal = document.getElementById('apiKeyModal');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const saveButton = document.getElementById('saveButton');
+        const cancelButton = document.getElementById('cancelButton');
+        const editKeyButton = document.getElementById('editKeyButton');
+        const modalMessage = document.getElementById('modalMessage');
+
+        // Create particles for speaking animation
+        for (let i = 0; i < 12; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.animationDelay = `${i * 0.25}s`;
+            particlesContainer.appendChild(particle);
+        }
+
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket(`ws://localhost:${WS_PORT}`);
+
+                ws.onopen = () => {
+                    console.log('Connected to backend');
+                    addLog('Connected to Bible AI backend');
+                    if (reconnectInterval) {
+                        clearInterval(reconnectInterval);
+                        reconnectInterval = null;
+                    }
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleBackendMessage(data);
+                    } catch (e) {
+                        console.error('Error parsing message:', e);
+                    }
+                };
+
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                };
+
+                ws.onclose = () => {
+                    console.log('Disconnected from backend');
+                    if (!reconnectInterval) {
+                        reconnectInterval = setInterval(() => {
+                            console.log('Attempting to reconnect...');
+                            connectWebSocket();
+                        }, 2000);
+                    }
+                };
+            } catch (e) {
+                console.error('Error connecting:', e);
+            }
+        }
+
+        function handleBackendMessage(data) {
+            if (data.type === 'status') {
+                updateStatus(data.message, data.state);
+            } else if (data.type === 'log') {
+                addLog(data.message);
+            } else if (data.type === 'button') {
+                updateButton(data.text, data.color);
+            } else if (data.type === 'config') {
+                // Show modal if API key setup is required and no key exists
+                if (data.require_setup && !data.has_key) {
+                    showApiKeyModal();
+                }
+            } else if (data.type === 'api_key_response') {
+                handleApiKeyResponse(data);
+            }
+        }
+
+        function updateStatus(message, state) {
+            status.textContent = message;
+            status.className = 'status';
+            orb.className = 'orb';
+
+            if (state === 'listening') {
+                status.classList.add('listening');
+            } else if (state === 'speaking') {
+                status.classList.add('speaking');
+                orb.classList.add('speaking');
+            }
+        }
+
+        function updateButton(text, color) {
+            mainButton.textContent = text;
+            if (color === 'red') {
+                mainButton.classList.add('stop');
+            } else {
+                mainButton.classList.remove('stop');
+            }
+        }
+
+        function addLog(message) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = message;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+
+            // Keep only last 20 entries
+            while (logContainer.children.length > 20) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+
+        mainButton.addEventListener('click', () => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ action: 'toggle' }));
+            } else {
+                addLog('Not connected to backend. Trying to reconnect...');
+                connectWebSocket();
+            }
+        });
+
+        // API Key Modal Functions
+        function showApiKeyModal() {
+            apiKeyModal.classList.add('active');
+            apiKeyInput.value = '';
+            hideModalMessage();
+        }
+
+        function hideApiKeyModal() {
+            apiKeyModal.classList.remove('active');
+            hideModalMessage();
+        }
+
+        function showModalMessage(message, isSuccess) {
+            modalMessage.textContent = message;
+            modalMessage.className = 'modal-message active ' + (isSuccess ? 'success' : 'error');
+        }
+
+        function hideModalMessage() {
+            modalMessage.className = 'modal-message';
+        }
+
+        function handleApiKeyResponse(data) {
+            showModalMessage(data.message, data.success);
+            if (data.success) {
+                setTimeout(() => {
+                    hideApiKeyModal();
+                    addLog('API key configured successfully');
+                }, 1500);
+            }
+        }
+
+        // Edit Key Button Click
+        editKeyButton.addEventListener('click', () => {
+            showApiKeyModal();
+        });
+
+        // Cancel Button Click
+        cancelButton.addEventListener('click', () => {
+            hideApiKeyModal();
+        });
+
+        // Save Button Click
+        saveButton.addEventListener('click', () => {
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey) {
+                showModalMessage('Please enter an API key', false);
+                return;
+            }
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    action: 'save_api_key',
+                    api_key: apiKey
+                }));
+            } else {
+                showModalMessage('Not connected to backend', false);
+            }
+        });
+
+        // Allow Enter key to save
+        apiKeyInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveButton.click();
+            }
+        });
+
+        // Connect on page load
+        connectWebSocket();
+    </script>
+</body>
+</html>
